@@ -1,0 +1,1282 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0d1b3e">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>NBA GUESS</title>
+<script src="players.js"></script>
+<style>
+/* ============================================================
+   BASE
+============================================================ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --gold:    #c8a84b;
+  --gold-lt: #e0bc5a;
+  --bg:      #0a0a1a;
+  --bg2:     #111122;
+  --bg3:     #1a1a2e;
+  --bg4:     #22223a;
+  --border:  #2a2a4a;
+  --text:    #ffffff;
+  --text2:   #aaaacc;
+  --text3:   #666688;
+  --green:   #2ecc71;
+  --yellow:  #f39c12;
+  --red:     #e74c3c;
+  --header-h: 56px;
+  --tabnav-h: 52px;
+}
+html { font-size: 16px; -webkit-text-size-adjust: 100%; }
+body {
+  font-family: -apple-system, 'Segoe UI', 'Hiragino Sans', Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  min-height: -webkit-fill-available;
+  overscroll-behavior: none;
+}
+
+/* ============================================================
+   HEADER
+============================================================ */
+header {
+  position: sticky; top: 0; z-index: 100;
+  background: linear-gradient(135deg,#1a1a3e,#0d1b3e);
+  border-bottom: 2px solid var(--gold);
+  height: var(--header-h);
+  display: flex; align-items: center;
+  padding: 0 12px; gap: 10px;
+}
+.logo {
+  font-size: 1.3rem; font-weight: 900; letter-spacing: 3px;
+  color: var(--gold); white-space: nowrap;
+  text-shadow: 0 0 16px rgba(200,168,75,.4);
+}
+.header-spacer { flex: 1; }
+.nickname-wrap {
+  display: flex; align-items: center; gap: 6px;
+}
+.nickname-wrap span { font-size: 0.75rem; color: var(--text3); }
+#nicknameInput {
+  background: var(--bg3); color: var(--gold); border: 1px solid var(--border);
+  border-radius: 6px; padding: 4px 8px; font-size: 0.82rem; font-weight: 700;
+  outline: none; width: 90px; transition: border-color .2s;
+}
+#nicknameInput:focus { border-color: var(--gold); }
+.season-pill {
+  display: flex; align-items: center; gap: 6px;
+}
+.season-pill label { font-size: 0.7rem; color: var(--text3); letter-spacing: 1px; }
+#seasonSelect {
+  background: var(--bg3); color: var(--gold); border: 1px solid var(--gold);
+  border-radius: 6px; padding: 4px 22px 4px 8px; font-size: 0.82rem; font-weight: 700;
+  cursor: pointer; outline: none; appearance: none; -webkit-appearance: none; -moz-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23c8a84b'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 6px center;
+}
+#seasonSelect option { background: #1a1a3e; }
+.data-badge {
+  font-size: 0.62rem; font-weight: 700; padding: 2px 6px; border-radius: 4px;
+  letter-spacing: 0.5px; white-space: nowrap;
+}
+
+/* ============================================================
+   TAB NAVIGATION
+============================================================ */
+.tab-nav {
+  position: sticky; top: var(--header-h); z-index: 99;
+  display: flex; background: var(--bg2); border-bottom: 1px solid var(--border);
+  height: var(--tabnav-h);
+}
+.tab-btn {
+  flex: 1; background: none; border: none; color: var(--text3);
+  font-size: 0.88rem; font-weight: 600; cursor: pointer;
+  padding: 0; display: flex; align-items: center; justify-content: center; gap: 5px;
+  border-bottom: 3px solid transparent; transition: color .2s, border-color .2s;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+.tab-btn.active { color: var(--gold); border-bottom-color: var(--gold); }
+.tab-btn:active { background: rgba(255,255,255,.04); }
+
+/* ============================================================
+   TAB CONTENT
+============================================================ */
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+/* ============================================================
+   GAME TAB
+============================================================ */
+.game-wrap { padding: 12px 12px 80px; max-width: 900px; margin: 0 auto; }
+
+/* Mystery Player */
+.mystery-box {
+  background: var(--bg2); border: 1px solid var(--border); border-radius: 14px;
+  padding: 16px; text-align: center; margin-bottom: 12px;
+  position: relative;
+}
+.mystery-label { font-size: 0.68rem; color: var(--text3); letter-spacing: 2px; margin-bottom: 6px; }
+.mystery-emoji {
+  font-size: 4rem; display: block; margin: 0 auto 8px;
+  filter: brightness(0) opacity(.4); transition: filter .6s, opacity .6s;
+}
+.mystery-emoji.revealed { filter: brightness(1); opacity: 1; }
+
+/* ── Timer ── */
+.timer-row {
+  display: flex; align-items: center; justify-content: center;
+  gap: 12px; margin-bottom: 8px; flex-wrap: wrap;
+}
+.timer-display {
+  font-size: 1.6rem; font-weight: 900; letter-spacing: 2px;
+  font-variant-numeric: tabular-nums; transition: color .5s;
+  color: var(--green);
+  text-shadow: 0 0 12px currentColor;
+}
+.timer-display.warn  { color: var(--yellow); }
+.timer-display.danger{ color: var(--red); }
+.timer-bar-wrap {
+  position: absolute; bottom: 0; left: 0; right: 0; height: 3px;
+  background: var(--border); border-radius: 0 0 14px 14px; overflow: hidden;
+}
+.timer-bar {
+  height: 100%; width: 100%;
+  background: var(--green); transition: width .5s linear, background .5s;
+}
+.timer-bar.warn   { background: var(--yellow); }
+.timer-bar.danger { background: var(--red); }
+
+/* ── Score display ── */
+.score-display {
+  display: flex; align-items: center; justify-content: center;
+  gap: 6px; flex-wrap: wrap; margin-bottom: 10px;
+}
+.score-badge {
+  background: var(--bg3); border-radius: 20px; padding: 4px 12px;
+  font-size: 0.78rem; color: var(--text3); display: flex; align-items: center; gap: 4px;
+}
+.score-badge b { color: var(--gold); font-size: 1rem; }
+.score-badge.time-bonus b { color: var(--green); }
+
+.dots-row {
+  display: flex; justify-content: center; gap: 6px; margin-bottom: 6px;
+}
+.dot {
+  width: 11px; height: 11px; border-radius: 50%;
+  background: var(--border); border: 1px solid var(--border);
+  transition: background .3s;
+}
+.dot.used    { background: var(--gold);  border-color: var(--gold); }
+.dot.correct { background: var(--green); border-color: var(--green); }
+.attempts-txt { font-size: 0.75rem; color: var(--text3); }
+.attempts-txt b { color: var(--gold); }
+
+/* How to play */
+.howto-toggle {
+  width: 100%; background: var(--bg2); border: 1px solid var(--border);
+  color: var(--text2); border-radius: 10px; padding: 10px 14px;
+  font-size: 0.8rem; text-align: left; cursor: pointer; margin-bottom: 8px;
+  display: flex; justify-content: space-between; align-items: center;
+  touch-action: manipulation; -webkit-tap-highlight-color: transparent;
+}
+.howto-toggle .arrow { transition: transform .25s; }
+.howto-toggle.open .arrow { transform: rotate(180deg); }
+.howto-body {
+  display: none; background: var(--bg2); border: 1px solid var(--border);
+  border-top: none; border-radius: 0 0 10px 10px;
+  padding: 10px 14px 12px; margin-bottom: 12px; font-size: 0.8rem;
+}
+.howto-body.open { display: block; }
+.legend { display: flex; flex-wrap: wrap; gap: 10px 20px; margin-bottom: 6px; }
+.legend-item { display: flex; align-items: center; gap: 6px; color: var(--text2); }
+.ld { width: 14px; height: 14px; border-radius: 3px; flex-shrink: 0; }
+.ld.c { background: #143214; border: 1px solid var(--green); }
+.ld.p { background: #3a2800; border: 1px solid var(--yellow); }
+.ld.w { background: #1e1010; border: 1px solid #555; }
+.howto-body p { color: var(--text3); font-size: 0.76rem; margin-top: 4px; }
+
+/* Search */
+.search-wrap { position: relative; margin-bottom: 14px; }
+#searchInput {
+  width: 100%; padding: 14px 16px; border-radius: 12px;
+  border: 2px solid var(--border); background: var(--bg2);
+  color: var(--text); font-size: 1rem; outline: none;
+  -webkit-appearance: none; transition: border-color .2s;
+}
+#searchInput:focus { border-color: var(--gold); }
+#searchInput:disabled { opacity: .35; }
+.autocomplete {
+  position: absolute; top: calc(100% + 4px); left: 0; right: 0;
+  background: var(--bg3); border: 1px solid var(--border); border-radius: 10px;
+  max-height: 220px; overflow-y: auto; z-index: 200; display: none;
+  box-shadow: 0 12px 32px rgba(0,0,0,.6);
+  -webkit-overflow-scrolling: touch;
+}
+.autocomplete.show { display: block; }
+.ac-item {
+  padding: 11px 14px; cursor: pointer; display: flex;
+  align-items: center; gap: 10px; font-size: 0.9rem;
+  border-bottom: 1px solid var(--border); min-height: 44px;
+  touch-action: manipulation; -webkit-tap-highlight-color: transparent;
+}
+.ac-item:last-child { border-bottom: none; }
+.ac-item:active, .ac-item.sel { background: var(--bg4); }
+.ac-badge {
+  width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.55rem; font-weight: 800; color: #fff;
+}
+.ac-pos { margin-left: auto; font-size: 0.75rem; color: var(--text3); }
+
+/* Guess Grid */
+.grid-scroll-hint {
+  font-size: 0.7rem; color: var(--text3); text-align: center;
+  margin-bottom: 4px; display: none;
+}
+@media (max-width: 640px) { .grid-scroll-hint { display: block; } }
+
+.grid-outer {
+  overflow-x: auto; -webkit-overflow-scrolling: touch;
+  border-radius: 10px; margin-bottom: 8px;
+}
+.grid-outer::-webkit-scrollbar { height: 3px; }
+.grid-outer::-webkit-scrollbar-track { background: var(--bg2); }
+.grid-outer::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+.grid-inner { min-width: 560px; }
+
+.g-header {
+  display: grid;
+  grid-template-columns: 150px repeat(6, 1fr);
+  gap: 3px; padding: 0 2px 4px;
+}
+.g-col-label {
+  font-size: 0.65rem; font-weight: 700; color: var(--text3);
+  text-transform: uppercase; letter-spacing: 0.8px;
+  text-align: center; padding: 4px 2px;
+}
+.g-col-label:first-child { text-align: left; padding-left: 6px; }
+
+.g-row {
+  display: grid;
+  grid-template-columns: 150px repeat(6, 1fr);
+  gap: 3px; margin-bottom: 3px;
+  animation: rowIn .22s ease;
+}
+@keyframes rowIn {
+  from { opacity: 0; transform: translateY(-5px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.g-cell {
+  border-radius: 7px; padding: 7px 4px;
+  text-align: center; font-size: 0.78rem; font-weight: 600;
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; min-height: 50px;
+  background: var(--bg3); border: 1px solid var(--border);
+  transition: background .3s, border-color .3s, color .3s;
+  line-height: 1.3;
+}
+.g-cell.name-cell {
+  align-items: flex-start; flex-direction: row;
+  gap: 5px; padding: 7px 8px; font-size: 0.76rem;
+}
+.g-cell.name-cell .rn { font-size: 0.64rem; color: var(--text3); flex-shrink: 0; }
+.g-cell sub { font-size: 0.6rem; color: inherit; opacity: .7; font-weight: 400; }
+.g-cell.correct { background: #0e2e0e; border-color: var(--green); color: #4ade80; }
+.g-cell.partial { background: #2e2000; border-color: var(--yellow); color: #fbbf24; }
+.g-cell.wrong   { background: #160e0e; border-color: #3a3a4a; color: #4a4a5a; }
+.arr { font-size: 0.7rem; }
+.arr.up   { color: #4ade80; }
+.arr.down { color: #f87171; }
+
+.e-row {
+  display: grid;
+  grid-template-columns: 150px repeat(6, 1fr);
+  gap: 3px; margin-bottom: 3px; opacity: .2;
+}
+.e-cell { border-radius: 7px; min-height: 50px; background: #0c0c1a; border: 1px dashed var(--border); }
+
+/* ============================================================
+   RESULT MODAL
+============================================================ */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,.88);
+  display: flex; align-items: flex-end; justify-content: center;
+  z-index: 500; opacity: 0; pointer-events: none; transition: opacity .3s;
+}
+@media (min-width: 480px) {
+  .modal-overlay { align-items: center; }
+}
+.modal-overlay.show { opacity: 1; pointer-events: all; }
+.modal {
+  background: var(--bg3); border: 2px solid var(--gold);
+  border-radius: 20px 20px 0 0; padding: 24px 20px 32px;
+  width: 100%; max-width: 440px;
+  transform: translateY(100%); transition: transform .35s cubic-bezier(.25,.8,.25,1);
+  text-align: center;
+}
+@media (min-width: 480px) {
+  .modal { border-radius: 18px; transform: scale(.85); }
+  .modal-overlay.show .modal { transform: scale(1); }
+}
+.modal-overlay.show .modal { transform: translateY(0); }
+.modal h2 { font-size: 1.6rem; color: var(--gold); margin-bottom: 4px; }
+.modal-player { font-size: 1.3rem; font-weight: 700; margin: 12px 0 4px; }
+.modal-detail { color: var(--text2); font-size: 0.85rem; margin-bottom: 14px; }
+.score-earned {
+  background: linear-gradient(135deg,#2a2000,#3a2800);
+  border: 1px solid var(--gold); border-radius: 12px;
+  padding: 12px; margin-bottom: 14px;
+}
+.score-earned .pts { font-size: 2.4rem; font-weight: 900; color: var(--gold); }
+.score-earned .pts-label { font-size: 0.75rem; color: var(--text2); }
+.score-breakdown {
+  display: flex; justify-content: center; gap: 6px; flex-wrap: wrap;
+  margin-top: 8px;
+}
+.sb-item {
+  background: rgba(0,0,0,.3); border-radius: 8px; padding: 5px 10px;
+  font-size: 0.72rem; color: var(--text2);
+}
+.sb-item b { font-size: 0.9rem; }
+.sb-item.guess b { color: var(--gold); }
+.sb-item.time  b { color: var(--green); }
+.sb-item.streak b { color: #f59e0b; }
+.stat-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; margin-bottom: 16px; }
+.stat-box { background: var(--bg2); border-radius: 8px; padding: 10px 6px; }
+.stat-box .v { font-size: 1.5rem; font-weight: 700; color: var(--gold); }
+.stat-box .l { font-size: 0.68rem; color: var(--text3); margin-top: 1px; }
+.modal-btns { display: flex; flex-direction: column; gap: 8px; }
+.btn-primary {
+  background: var(--gold); color: #000; border: none;
+  padding: 14px; border-radius: 10px; font-size: 1rem; font-weight: 800;
+  cursor: pointer; letter-spacing: 1px; transition: background .2s;
+  touch-action: manipulation; -webkit-tap-highlight-color: transparent;
+}
+.btn-primary:active { background: var(--gold-lt); }
+.btn-secondary {
+  background: transparent; color: var(--gold);
+  border: 1px solid var(--gold); padding: 11px; border-radius: 10px;
+  font-size: 0.88rem; font-weight: 700; cursor: pointer; transition: background .2s;
+  touch-action: manipulation;
+}
+.btn-secondary:active { background: rgba(200,168,75,.1); }
+.modal-game-count { color: var(--text3); font-size: 0.75rem; margin-top: 8px; }
+
+/* ============================================================
+   RANKINGS TAB
+============================================================ */
+.rank-wrap { padding: 14px 12px 80px; max-width: 900px; margin: 0 auto; }
+.rank-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 14px; flex-wrap: wrap; gap: 8px;
+}
+.rank-header h2 { font-size: 1.1rem; color: var(--gold); font-weight: 800; }
+.rank-filters { display: flex; gap: 8px; flex-wrap: wrap; }
+.filter-btn {
+  background: var(--bg3); border: 1px solid var(--border); color: var(--text2);
+  padding: 5px 12px; border-radius: 20px; font-size: 0.78rem; font-weight: 600;
+  cursor: pointer; transition: all .2s; touch-action: manipulation;
+}
+.filter-btn.active { background: var(--gold); color: #000; border-color: var(--gold); }
+
+/* Score formula box */
+.score-formula {
+  background: var(--bg2); border: 1px solid var(--border); border-radius: 12px;
+  padding: 12px 14px; margin-bottom: 14px; font-size: 0.8rem; color: var(--text2);
+}
+.score-formula h4 { color: var(--gold); font-size: 0.78rem; margin-bottom: 8px; letter-spacing: 1px; }
+.formula-row { display: flex; flex-wrap: wrap; gap: 6px 12px; }
+.formula-item { display: flex; align-items: center; gap: 5px; }
+.formula-pts { font-weight: 700; color: var(--gold); min-width: 36px; text-align: right; }
+.formula-note { color: var(--text3); font-size: 0.73rem; }
+
+/* My stats */
+.my-stats {
+  background: var(--bg2); border: 1px solid var(--border); border-radius: 12px;
+  padding: 14px; margin-bottom: 14px;
+}
+.my-stats h4 { color: var(--gold); font-size: 0.8rem; margin-bottom: 10px; letter-spacing: 1px; }
+.my-stats-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; }
+@media (max-width: 400px) { .my-stats-grid { grid-template-columns: repeat(2,1fr); } }
+.mstat { background: var(--bg3); border-radius: 8px; padding: 10px 6px; text-align: center; }
+.mstat .v { font-size: 1.4rem; font-weight: 700; color: var(--gold); }
+.mstat .l { font-size: 0.68rem; color: var(--text3); margin-top: 2px; }
+
+/* Rankings table */
+.rank-table-wrap {
+  background: var(--bg2); border: 1px solid var(--border); border-radius: 12px;
+  overflow: hidden; margin-bottom: 14px;
+}
+.rank-table-header {
+  display: grid; grid-template-columns: 36px 1fr 80px 50px 46px 50px;
+  gap: 4px; padding: 10px 12px;
+  background: var(--bg3); font-size: 0.68rem; font-weight: 700;
+  color: var(--text3); text-transform: uppercase; letter-spacing: 0.8px;
+  border-bottom: 1px solid var(--border);
+}
+.rank-row {
+  display: grid; grid-template-columns: 36px 1fr 80px 50px 46px 50px;
+  gap: 4px; padding: 10px 12px; border-bottom: 1px solid var(--border);
+  align-items: center; font-size: 0.82rem; transition: background .15s;
+}
+.rank-row:last-child { border-bottom: none; }
+.rank-row.mine { background: rgba(200,168,75,.07); }
+.rank-row:active { background: var(--bg3); }
+.rank-num { color: var(--text3); font-weight: 700; font-size: 0.8rem; }
+.rank-num.top1 { color: #ffd700; font-size: 1rem; }
+.rank-num.top2 { color: #c0c0c0; font-size: 0.95rem; }
+.rank-num.top3 { color: #cd7f32; font-size: 0.9rem; }
+.rank-name { font-weight: 600; display: flex; align-items: center; gap: 6px; }
+.rank-name sub { font-size: 0.65rem; color: var(--text3); font-weight: 400; }
+.rank-season-badge {
+  font-size: 0.62rem; padding: 2px 6px; border-radius: 4px;
+  background: var(--bg3); color: var(--text3); white-space: nowrap;
+}
+.rank-score { font-weight: 700; color: var(--gold); text-align: right; }
+.rank-guesses { text-align: center; color: var(--text2); }
+.rank-date { font-size: 0.7rem; color: var(--text3); text-align: right; }
+
+.rank-empty { text-align: center; padding: 40px 20px; color: var(--text3); font-size: 0.88rem; }
+.rank-empty span { font-size: 2rem; display: block; margin-bottom: 8px; }
+
+.rank-action-row { display: flex; justify-content: flex-end; }
+.btn-danger {
+  background: transparent; color: #888; border: 1px solid #444;
+  padding: 7px 14px; border-radius: 8px; font-size: 0.78rem;
+  cursor: pointer; transition: all .2s;
+}
+.btn-danger:hover { border-color: var(--red); color: var(--red); }
+
+/* ============================================================
+   TOAST
+============================================================ */
+.toast {
+  position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+  background: var(--gold); color: #000; padding: 9px 20px;
+  border-radius: 20px; font-weight: 700; font-size: 0.85rem;
+  opacity: 0; pointer-events: none; transition: opacity .3s; z-index: 600;
+  white-space: nowrap; max-width: 90vw;
+}
+.toast.show { opacity: 1; }
+
+/* ============================================================
+   CONFIRM DIALOG
+============================================================ */
+.confirm-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,.7);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 700; opacity: 0; pointer-events: none; transition: opacity .2s;
+}
+.confirm-overlay.show { opacity: 1; pointer-events: all; }
+.confirm-box {
+  background: var(--bg3); border: 1px solid var(--border); border-radius: 14px;
+  padding: 24px 20px; max-width: 300px; width: 90%; text-align: center;
+}
+.confirm-box h3 { color: var(--text); margin-bottom: 8px; font-size: 1rem; }
+.confirm-box p  { color: var(--text2); font-size: 0.85rem; margin-bottom: 18px; }
+.confirm-btns { display: flex; gap: 10px; }
+.confirm-btns button { flex: 1; padding: 10px; border-radius: 8px; font-weight: 700; cursor: pointer; border: none; font-size: 0.9rem; }
+.confirm-cancel { background: var(--bg2); color: var(--text2); }
+.confirm-ok { background: var(--red); color: #fff; }
+
+/* ============================================================
+   UTILITY
+============================================================ */
+@media (min-width: 641px) {
+  .game-wrap, .rank-wrap { padding: 16px 20px 60px; }
+  .g-header { grid-template-columns: 175px repeat(6, 1fr); }
+  .g-row    { grid-template-columns: 175px repeat(6, 1fr); }
+  .e-row    { grid-template-columns: 175px repeat(6, 1fr); }
+}
+</style>
+</head>
+<body>
+
+<!-- ======================================================
+     HEADER
+====================================================== -->
+<header>
+  <div class="logo">🏀 NBA GUESS</div>
+  <div class="header-spacer"></div>
+  <div class="season-pill">
+    <label>SEASON</label>
+    <select id="seasonSelect">
+      <option value="2025-26">2025-26</option>
+      <option value="2024-25">2024-25</option>
+      <option value="2023-24">2023-24</option>
+    </select>
+    <span class="data-badge" id="seasonBadge"></span>
+  </div>
+  <div class="nickname-wrap">
+    <span>名前:</span>
+    <input type="text" id="nicknameInput" maxlength="10" placeholder="プレイヤー">
+  </div>
+</header>
+
+<!-- ======================================================
+     TAB NAVIGATION
+====================================================== -->
+<nav class="tab-nav">
+  <button class="tab-btn active" data-tab="game">🏀 ゲーム</button>
+  <button class="tab-btn"        data-tab="rank">🏆 ランキング</button>
+</nav>
+
+<!-- ======================================================
+     GAME TAB
+====================================================== -->
+<section id="tab-game" class="tab-content active">
+<div class="game-wrap">
+
+  <!-- Mystery Player -->
+  <div class="mystery-box">
+    <div class="mystery-label">TODAY'S MYSTERY PLAYER</div>
+    <span class="mystery-emoji" id="mysteryEmoji">🏀</span>
+    <div class="timer-row">
+      <div class="timer-display" id="timerDisplay" style="opacity:.35;font-size:1rem;letter-spacing:1px">入力でタイマー開始</div>
+    </div>
+    <div class="score-display">
+      <div class="score-badge">推測スコア <b id="guessScore">1200</b></div>
+      <div class="score-badge time-bonus">時間ボーナス <b id="timeBonus">+600</b></div>
+      <div class="score-badge" style="border:1px solid var(--gold)">合計 <b id="totalScore">1800</b> pts</div>
+    </div>
+    <div class="dots-row" id="dotsRow"></div>
+    <div class="attempts-txt">残り <b id="attemptsLeft">8</b> / 8 回</div>
+    <div class="timer-bar-wrap"><div class="timer-bar" id="timerBar"></div></div>
+  </div>
+
+  <!-- How to play -->
+  <button class="howto-toggle" id="howtoToggle">
+    <span>📖 ルール</span><span class="arrow">▼</span>
+  </button>
+  <div class="howto-body" id="howtoBody">
+    <div class="legend">
+      <div class="legend-item"><div class="ld c"></div>正解</div>
+      <div class="legend-item"><div class="ld p"></div>近い値</div>
+      <div class="legend-item"><div class="ld w"></div>不正解</div>
+    </div>
+    <p>近い値 = チームは同カンファ / 身長±5cm / 背番号±5 / 年齢±2歳</p>
+    <p>↑↓ は実際より小さい / 大きいを示します</p>
+  </div>
+
+  <!-- Search -->
+  <div class="search-wrap">
+    <input type="text" id="searchInput"
+      placeholder="選手名を入力… (例: LeBron James)" autocomplete="off"
+      inputmode="search">
+    <div class="autocomplete" id="autocomplete"></div>
+  </div>
+
+  <!-- Grid -->
+  <div class="grid-scroll-hint">← 横スクロールで全列を確認 →</div>
+  <div class="grid-outer">
+    <div class="grid-inner">
+      <div class="g-header">
+        <div class="g-col-label">選手名</div>
+        <div class="g-col-label">チーム</div>
+        <div class="g-col-label">POS</div>
+        <div class="g-col-label">身長</div>
+        <div class="g-col-label">背番号</div>
+        <div class="g-col-label">年齢</div>
+        <div class="g-col-label">カンファ</div>
+      </div>
+      <div id="guessRows"></div>
+      <div id="emptyRows"></div>
+    </div>
+  </div>
+
+</div>
+</section>
+
+<!-- ======================================================
+     RANKINGS TAB
+====================================================== -->
+<section id="tab-rank" class="tab-content">
+<div class="rank-wrap">
+
+  <div class="rank-header">
+    <h2>🏆 ランキング</h2>
+    <div class="rank-filters" id="rankFilters">
+      <button class="filter-btn active" data-season="all">全シーズン</button>
+      <button class="filter-btn" data-season="2025-26">2025-26</button>
+      <button class="filter-btn" data-season="2024-25">2024-25</button>
+      <button class="filter-btn" data-season="2023-24">2023-24</button>
+    </div>
+  </div>
+
+  <!-- Score formula -->
+  <div class="score-formula">
+    <h4>📊 スコア計算式</h4>
+    <p style="color:var(--text2);font-size:0.8rem;margin-bottom:8px">
+      <b style="color:var(--gold)">合計 = 推測スコア + 時間ボーナス + 連勝ボーナス</b>
+    </p>
+    <div class="formula-row" style="margin-bottom:8px">
+      <div class="formula-item"><span class="formula-pts">1200</span><span class="formula-note">1回</span></div>
+      <div class="formula-item"><span class="formula-pts">1050</span><span class="formula-note">2回</span></div>
+      <div class="formula-item"><span class="formula-pts">900</span><span class="formula-note">3回</span></div>
+      <div class="formula-item"><span class="formula-pts">750</span><span class="formula-note">4回</span></div>
+      <div class="formula-item"><span class="formula-pts">600</span><span class="formula-note">5回</span></div>
+      <div class="formula-item"><span class="formula-pts">450</span><span class="formula-note">6回</span></div>
+      <div class="formula-item"><span class="formula-pts">300</span><span class="formula-note">7回</span></div>
+      <div class="formula-item"><span class="formula-pts">150</span><span class="formula-note">8回</span></div>
+      <div class="formula-item"><span class="formula-pts" style="color:#f87171">0</span><span class="formula-note">不正解</span></div>
+    </div>
+    <div class="formula-row">
+      <div class="formula-item"><span class="formula-pts" style="color:var(--green)">+600</span><span class="formula-note">⏱ 0秒</span></div>
+      <div class="formula-item"><span class="formula-pts" style="color:var(--green)">+450</span><span class="formula-note">⏱ 30秒</span></div>
+      <div class="formula-item"><span class="formula-pts" style="color:var(--yellow)">+300</span><span class="formula-note">⏱ 60秒</span></div>
+      <div class="formula-item"><span class="formula-pts" style="color:var(--yellow)">+150</span><span class="formula-note">⏱ 90秒</span></div>
+      <div class="formula-item"><span class="formula-pts" style="color:#888">+0</span><span class="formula-note">⏱ 120秒〜</span></div>
+    </div>
+    <p style="color:var(--text3);font-size:0.72rem;margin-top:6px">🔥 連勝ボーナス: (連勝-1) × 50pts ／ 最高理論値: 1800pts+連勝ボーナス</p>
+  </div>
+
+  <!-- My stats -->
+  <div class="my-stats">
+    <h4>MY STATS</h4>
+    <div class="my-stats-grid">
+      <div class="mstat"><div class="v" id="ms-total">0</div><div class="l">ゲーム数</div></div>
+      <div class="mstat"><div class="v" id="ms-rate">—</div><div class="l">勝率</div></div>
+      <div class="mstat"><div class="v" id="ms-best">0</div><div class="l">最高スコア</div></div>
+      <div class="mstat"><div class="v" id="ms-streak">0</div><div class="l">最高連勝</div></div>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="rank-table-wrap">
+    <div class="rank-table-header">
+      <div>#</div>
+      <div>プレイヤー / 問題</div>
+      <div style="text-align:right">スコア</div>
+      <div style="text-align:center">回数</div>
+      <div style="text-align:center">⏱</div>
+      <div style="text-align:right">日付</div>
+    </div>
+    <div id="rankList"></div>
+  </div>
+
+  <div class="rank-action-row">
+    <button class="btn-danger" id="clearRankBtn">🗑 記録を全削除</button>
+  </div>
+
+</div>
+</section>
+
+<!-- ======================================================
+     RESULT MODAL
+====================================================== -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <h2 id="modalTitle"></h2>
+    <div class="modal-player" id="modalPlayer"></div>
+    <div class="modal-detail" id="modalDetail"></div>
+    <div class="score-earned">
+      <div class="pts" id="modalPts">—</div>
+      <div class="pts-label">獲得スコア</div>
+      <div class="score-breakdown" id="scoreBreakdown"></div>
+    </div>
+    <div class="stat-grid">
+      <div class="stat-box"><div class="v" id="m-streak">0</div><div class="l">現在の連勝</div></div>
+      <div class="stat-box"><div class="v" id="m-wins">0</div><div class="l">総勝利数</div></div>
+      <div class="stat-box"><div class="v" id="m-rate">—</div><div class="l">勝率</div></div>
+    </div>
+    <div class="modal-btns">
+      <button class="btn-primary" id="playAgainBtn">🔄 もう一度プレイ！</button>
+      <button class="btn-secondary" id="shareBtn">結果をシェア 📋</button>
+    </div>
+    <div class="modal-game-count" id="modalGameCount"></div>
+  </div>
+</div>
+
+<!-- Confirm dialog -->
+<div class="confirm-overlay" id="confirmOverlay">
+  <div class="confirm-box">
+    <h3>記録を削除しますか？</h3>
+    <p>すべてのランキング記録が消去されます。この操作は元に戻せません。</p>
+    <div class="confirm-btns">
+      <button class="confirm-cancel" id="confirmCancel">キャンセル</button>
+      <button class="confirm-ok"     id="confirmOk">削除する</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- ======================================================
+     JAVASCRIPT
+====================================================== -->
+<script>
+// ============================================================
+// CONSTANTS & STATE
+// ============================================================
+const MAX_GUESSES   = 8;
+const BASE_SCORES   = [1200,1050,900,750,600,450,300,150];
+const TIME_MAX_SECS = 120;   // 120秒でタイムボーナス 0
+const TIME_MAX_PTS  = 600;   // 最大タイムボーナス
+
+let currentPlayer  = null;
+let currentSeason  = "2025-26";
+let guesses        = [];
+let gameOver       = false;
+let sessionHistory = [];
+let lastResult     = null;
+
+// timer
+let timerStart    = 0;
+let timerEl       = null;   // requestAnimationFrame handle
+let elapsedSecs   = 0;
+let timerStarted  = false;  // 最初の入力まで false
+
+// ============================================================
+// UTILS
+// ============================================================
+function cm2ft(cm) {
+  const i = cm / 2.54;
+  return `${Math.floor(i/12)}'${Math.round(i%12)}"`;
+}
+function posGroup(p) {
+  if (["PG","SG"].includes(p)) return "G";
+  if (["SF","PF"].includes(p)) return "F";
+  return "C";
+}
+// ── タイムボーナス計算 (0-600pts、120秒でゼロ)
+function calcTimeBonus(secs) {
+  return Math.max(0, Math.floor(TIME_MAX_PTS * Math.max(0, 1 - secs / TIME_MAX_SECS)));
+}
+
+function calcScore(guessCount, won, streak, secs) {
+  if (!won) return { total:0, base:0, timeBonus:0, streakBonus:0 };
+  const base        = BASE_SCORES[Math.min(guessCount - 1, BASE_SCORES.length - 1)];
+  const timeBonus   = calcTimeBonus(secs);
+  const streakBonus = streak > 1 ? (streak - 1) * 50 : 0;
+  return { total: base + timeBonus + streakBonus, base, timeBonus, streakBonus };
+}
+function today() {
+  return new Date().toLocaleDateString("ja-JP",{year:"2-digit",month:"2-digit",day:"2-digit"});
+}
+
+// ============================================================
+// NICKNAME
+// ============================================================
+const nicknameInput = document.getElementById("nicknameInput");
+nicknameInput.value = localStorage.getItem("nba_nickname") || "プレイヤー1";
+nicknameInput.addEventListener("change", () => {
+  const v = nicknameInput.value.trim() || "プレイヤー1";
+  nicknameInput.value = v;
+  localStorage.setItem("nba_nickname", v);
+});
+function getNickname() { return nicknameInput.value.trim() || "プレイヤー1"; }
+
+// ============================================================
+// STATS
+// ============================================================
+function loadStats() {
+  try {
+    return JSON.parse(localStorage.getItem("nba_stats_v3") ||
+      '{"played":0,"won":0,"streak":0,"maxStreak":0}');
+  } catch { return {played:0,won:0,streak:0,maxStreak:0}; }
+}
+function saveStats(s) { localStorage.setItem("nba_stats_v3", JSON.stringify(s)); }
+function renderHeaderStats() {
+  // no stat display in header in this version - stats in rankings tab
+}
+
+// ============================================================
+// RANKINGS (localStorage)
+// ============================================================
+function loadRankings() {
+  try { return JSON.parse(localStorage.getItem("nba_rankings_v2") || "[]"); }
+  catch { return []; }
+}
+function saveRankings(arr) { localStorage.setItem("nba_rankings_v2", JSON.stringify(arr)); }
+
+function addRankingEntry(won, guessCount, score, streak) {
+  const entries = loadRankings();
+  const m = Math.floor(elapsedSecs/60), s = elapsedSecs % 60;
+  entries.push({
+    id:          Date.now(),
+    nickname:    getNickname(),
+    score:       score.total,
+    base:        score.base,
+    timeBonus:   score.timeBonus,
+    streakBonus: score.streakBonus,
+    timeSecs:    elapsedSecs,
+    timeStr:     `${m}:${String(s).padStart(2,"0")}`,
+    guesses:     guessCount,
+    won,
+    player:      currentPlayer.name,
+    team:        currentPlayer.team,
+    season:      currentSeason,
+    streak,
+    date:        today(),
+  });
+  entries.sort((a,b) => b.score - a.score);
+  saveRankings(entries.slice(0, 100));
+}
+
+function renderRankings(filterSeason = "all") {
+  const all = loadRankings();
+  const filtered = filterSeason === "all" ? all : all.filter(e => e.season === filterSeason);
+
+  // My stats
+  const stats = loadStats();
+  document.getElementById("ms-total").textContent  = stats.played;
+  document.getElementById("ms-rate").textContent   = stats.played ? Math.round(stats.won/stats.played*100)+"%" : "—";
+  document.getElementById("ms-best").textContent   = all.length ? all[0].score : 0;
+  document.getElementById("ms-streak").textContent = stats.maxStreak;
+
+  // Table
+  const list = document.getElementById("rankList");
+  if (!filtered.length) {
+    list.innerHTML = `<div class="rank-empty"><span>🏀</span>まだ記録がありません。<br>ゲームをプレイしてランクインしましょう！</div>`;
+    return;
+  }
+  const nick = getNickname();
+  list.innerHTML = filtered.map((e, i) => {
+    const numCls = i===0?"top1":i===1?"top2":i===2?"top3":"";
+    const medal  = i===0?"🥇":i===1?"🥈":i===2?"🥉":i+1;
+    const isMe   = e.nickname === nick;
+    return `<div class="rank-row${isMe?" mine":""}">
+      <div class="rank-num ${numCls}">${medal}</div>
+      <div class="rank-name">
+        ${isMe?"<b>":""}${e.nickname}${isMe?"</b>":""}
+        <sub>/ ${e.player} <span class="rank-season-badge">${e.season}</span></sub>
+      </div>
+      <div class="rank-score">${e.won?e.score+"pts":"FAIL"}</div>
+      <div class="rank-guesses">${e.won?e.guesses+"/8":"X"}</div>
+      <div class="rank-guesses" style="color:var(--green);font-size:0.72rem">${e.timeStr||"—"}</div>
+      <div class="rank-date">${e.date}</div>
+    </div>`;
+  }).join("");
+}
+
+// Season filter buttons
+document.getElementById("rankFilters").addEventListener("click", e => {
+  const btn = e.target.closest(".filter-btn");
+  if (!btn) return;
+  document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+  renderRankings(btn.dataset.season);
+});
+
+// Clear rankings
+document.getElementById("clearRankBtn").addEventListener("click", () => {
+  document.getElementById("confirmOverlay").classList.add("show");
+});
+document.getElementById("confirmCancel").addEventListener("click", () => {
+  document.getElementById("confirmOverlay").classList.remove("show");
+});
+document.getElementById("confirmOk").addEventListener("click", () => {
+  saveRankings([]);
+  document.getElementById("confirmOverlay").classList.remove("show");
+  renderRankings();
+  showToast("記録を削除しました");
+});
+
+// ============================================================
+// SEASON
+// ============================================================
+function updateSeasonBadge() {
+  const meta  = NBA_SEASON_META[currentSeason];
+  const badge = document.getElementById("seasonBadge");
+  if (!meta) { badge.textContent = ""; return; }
+  badge.textContent     = meta.badge;
+  badge.style.background = meta.badgeColor + "22";
+  badge.style.color      = meta.badgeColor;
+  badge.style.border     = `1px solid ${meta.badgeColor}44`;
+}
+
+document.getElementById("seasonSelect").addEventListener("change", e => {
+  currentSeason  = e.target.value;
+  sessionHistory = [];
+  updateSeasonBadge();
+  startNewGame();
+  showToast(`${currentSeason} シーズンに切り替えました`);
+});
+
+// ============================================================
+// TIMER
+// ============================================================
+function resetTimer() {
+  // ゲーム開始時はリセットのみ。タイマーは最初の入力で起動する
+  if (timerEl) { cancelAnimationFrame(timerEl); timerEl = null; }
+  timerStarted = false;
+  elapsedSecs  = 0;
+  updateTimerUI(0);
+}
+function startTimer() {
+  if (timerStarted) return;   // 2回目以降の入力は無視
+  timerStarted = true;
+  timerStart   = performance.now();
+  tickTimer();
+}
+function stopTimer() {
+  if (timerEl) { cancelAnimationFrame(timerEl); timerEl = null; }
+  if (timerStarted) {
+    elapsedSecs = Math.round((performance.now() - timerStart) / 1000);
+  }
+}
+function tickTimer() {
+  const secs = Math.floor((performance.now() - timerStart) / 1000);
+  elapsedSecs = secs;
+  updateTimerUI(secs);
+  if (!gameOver) timerEl = requestAnimationFrame(tickTimer);
+}
+function updateTimerUI(secs) {
+  const m = Math.floor(secs / 60), s = secs % 60;
+  const disp = document.getElementById("timerDisplay");
+  const bar  = document.getElementById("timerBar");
+  if (!disp || !bar) return;
+
+  disp.textContent  = `${m}:${String(s).padStart(2,"0")}`;
+  disp.style.opacity    = "1";
+  disp.style.fontSize   = "";
+  disp.style.letterSpacing = "";
+  const pct = Math.max(0, 1 - secs / TIME_MAX_SECS);
+  bar.style.width = (pct * 100) + "%";
+
+  // Color transitions
+  const cls = secs < 40 ? "" : secs < 80 ? "warn" : "danger";
+  disp.className = "timer-display" + (cls?" "+cls:"");
+  bar.className  = "timer-bar"    + (cls?" "+cls:"");
+
+  // Live score update
+  const nextGuess = guesses.length;
+  const gScore    = BASE_SCORES[Math.min(nextGuess, BASE_SCORES.length - 1)];
+  const tBonus    = calcTimeBonus(secs);
+  document.getElementById("guessScore").textContent  = gScore;
+  document.getElementById("timeBonus").textContent   = "+" + tBonus;
+  document.getElementById("totalScore").textContent  = gScore + tBonus;
+}
+
+// ============================================================
+// PLAYER POOL
+// ============================================================
+function getPool() { return NBA_PLAYERS_BY_SEASON[currentSeason] || []; }
+function pickPlayer() {
+  const pool = getPool();
+  let src = pool.filter(p => !sessionHistory.includes(p.name));
+  if (!src.length) { sessionHistory = []; src = pool; }
+  const p = src[Math.floor(Math.random() * src.length)];
+  sessionHistory.push(p.name);
+  return p;
+}
+
+// ============================================================
+// COMPARISON
+// ============================================================
+function compare(guess, target) {
+  const r = {};
+  r.team = guess.team === target.team ? "correct" : guess.conf === target.conf ? "partial" : "wrong";
+  r.pos  = guess.pos  === target.pos  ? "correct" : posGroup(guess.pos)===posGroup(target.pos) ? "partial" : "wrong";
+  const hd = Math.abs(guess.height - target.height);
+  r.height = hd===0?"correct":hd<=5?"partial":"wrong";
+  r.hArr   = guess.height < target.height ? "up" : guess.height > target.height ? "down" : "";
+  const jd = Math.abs(guess.jersey - target.jersey);
+  r.jersey = jd===0?"correct":jd<=5?"partial":"wrong";
+  r.jArr   = guess.jersey < target.jersey ? "up" : guess.jersey > target.jersey ? "down" : "";
+  const ad = Math.abs(guess.age - target.age);
+  r.age  = ad===0?"correct":ad<=2?"partial":"wrong";
+  r.aArr = guess.age < target.age ? "up" : guess.age > target.age ? "down" : "";
+  r.conf = guess.conf === target.conf ? "correct" : "wrong";
+  return r;
+}
+
+// ============================================================
+// RENDER GRID
+// ============================================================
+function arr(dir) { return dir ? `<span class="arr ${dir}">${dir==="up"?"↑":"↓"}</span>` : ""; }
+
+function renderGrid() {
+  const gRows = document.getElementById("guessRows");
+  const eRows = document.getElementById("emptyRows");
+  gRows.innerHTML = "";
+  eRows.innerHTML = "";
+
+  guesses.forEach((g, idx) => {
+    const r  = compare(g, currentPlayer);
+    const tc = TEAM_COLORS[g.team] || "#555";
+    const row = document.createElement("div");
+    row.className = "g-row";
+    row.innerHTML = `
+      <div class="g-cell name-cell"><span class="rn">${idx+1}.</span><span>${g.name}</span></div>
+      <div class="g-cell ${r.team}">
+        <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${tc};margin-right:3px;"></span>
+        ${g.team}<sub>${g.conf.substring(0,1)}</sub>
+      </div>
+      <div class="g-cell ${r.pos}">${g.pos}</div>
+      <div class="g-cell ${r.height}">${cm2ft(g.height)}${arr(r.hArr)}<sub>${g.height}cm</sub></div>
+      <div class="g-cell ${r.jersey}">#${g.jersey}${arr(r.jArr)}</div>
+      <div class="g-cell ${r.age}">${g.age}歳${arr(r.aArr)}</div>
+      <div class="g-cell ${r.conf}">${g.conf}</div>
+    `;
+    gRows.appendChild(row);
+  });
+
+  const rem = MAX_GUESSES - guesses.length;
+  for (let i = 0; i < rem; i++) {
+    const row = document.createElement("div");
+    row.className = "e-row";
+    for (let j=0;j<7;j++) {
+      const c = document.createElement("div"); c.className="e-cell"; row.appendChild(c);
+    }
+    eRows.appendChild(row);
+  }
+
+  // Dots
+  const dotsRow = document.getElementById("dotsRow");
+  dotsRow.innerHTML = "";
+  for (let i=0; i<MAX_GUESSES; i++) {
+    const d = document.createElement("div");
+    d.className = "dot";
+    if (i < guesses.length) {
+      const isWin = guesses[i].name === currentPlayer.name;
+      d.classList.add(isWin ? "correct" : "used");
+    }
+    dotsRow.appendChild(d);
+  }
+  document.getElementById("attemptsLeft").textContent = rem;
+
+  // Potential score
+  if (!gameOver) {
+    const idx = guesses.length; // next guess index (0-based)
+    const pts = idx < BASE_SCORES.length ? BASE_SCORES[idx] : 150;
+    document.getElementById("potentialScore").textContent = pts;
+  }
+}
+
+// ============================================================
+// SUBMIT GUESS
+// ============================================================
+function submitGuess(player) {
+  document.getElementById("autocomplete").classList.remove("show");
+  document.getElementById("searchInput").value = "";
+
+  guesses.push(player);
+  renderGrid();
+
+  const won  = player.name === currentPlayer.name;
+  const lost = !won && guesses.length >= MAX_GUESSES;
+
+  if (won || lost) {
+    gameOver   = true;
+    lastResult = won ? "win" : "lose";
+    stopTimer();
+    document.getElementById("searchInput").disabled = true;
+
+    const emoji = document.getElementById("mysteryEmoji");
+    emoji.textContent = currentPlayer.emoji || "🏀";
+    emoji.classList.add("revealed");
+
+    const stats  = loadStats();
+    stats.played++;
+    if (won) { stats.won++; stats.streak++; stats.maxStreak = Math.max(stats.maxStreak, stats.streak); }
+    else      { stats.streak = 0; }
+    saveStats(stats);
+
+    const score = calcScore(guesses.length, won, stats.streak, elapsedSecs);
+    addRankingEntry(won, guesses.length, score, stats.streak);
+
+    setTimeout(() => showModal(won, stats, score), 700);
+  }
+}
+
+// ============================================================
+// MODAL
+// ============================================================
+function showModal(won, stats, score) {
+  document.getElementById("modalTitle").textContent   = won ? "🏆 正解！" : "😞 残念...";
+  document.getElementById("modalPlayer").textContent  = `${currentPlayer.emoji||"🏀"} ${currentPlayer.name}`;
+  document.getElementById("modalDetail").textContent  =
+    `${currentPlayer.team} | ${currentPlayer.pos} | ${cm2ft(currentPlayer.height)} | ${currentPlayer.age}歳`;
+
+  document.getElementById("modalPts").textContent = won ? `+${score.total}` : "0";
+  document.getElementById("modalPts").style.color = won ? "var(--gold)" : "#888";
+
+  const brk = document.getElementById("scoreBreakdown");
+  if (won) {
+    const m = Math.floor(elapsedSecs/60), s = elapsedSecs % 60;
+    brk.innerHTML = `
+      <div class="sb-item guess">推測<br><b>${score.base}</b></div>
+      <div class="sb-item time">時間(${m}:${String(s).padStart(2,"0")})<br><b>+${score.timeBonus}</b></div>
+      ${score.streakBonus > 0
+        ? `<div class="sb-item streak">🔥${stats.streak}連勝<br><b>+${score.streakBonus}</b></div>`
+        : ""}
+    `;
+  } else {
+    brk.innerHTML = "";
+  }
+
+  document.getElementById("m-streak").textContent = stats.streak;
+  document.getElementById("m-wins").textContent   = stats.won;
+  document.getElementById("m-rate").textContent   =
+    stats.played ? Math.round(stats.won/stats.played*100)+"%" : "—";
+
+  document.getElementById("modalGameCount").textContent =
+    `このセッション: ${sessionHistory.length} 問プレイ済み`;
+
+  document.getElementById("modalOverlay").classList.add("show");
+}
+
+function startNewGame() {
+  guesses       = [];
+  gameOver      = false;
+  lastResult    = null;
+  currentPlayer = pickPlayer();
+
+  document.getElementById("searchInput").disabled = false;
+  document.getElementById("searchInput").value    = "";
+  const emoji = document.getElementById("mysteryEmoji");
+  emoji.textContent = "🏀";
+  emoji.classList.remove("revealed");
+  document.getElementById("modalOverlay").classList.remove("show");
+  renderGrid();
+  resetTimer();   // リセットのみ。タイマーは最初の入力で起動
+}
+
+document.getElementById("playAgainBtn").addEventListener("click", startNewGame);
+
+// ============================================================
+// SHARE
+// ============================================================
+document.getElementById("shareBtn").addEventListener("click", () => {
+  const won = lastResult === "win";
+  const lines = guesses.map(g => {
+    const r = compare(g, currentPlayer);
+    return [r.team,r.pos,r.height,r.jersey,r.age,r.conf]
+      .map(v => v==="correct"?"🟩":v==="partial"?"🟨":"⬛").join("");
+  });
+  const text = [
+    `🏀 NBA GUESS [${currentSeason}]`,
+    `${won?guesses.length:"X"}/${MAX_GUESSES}  ${won?"✅":"❌"}`,
+    "",
+    ...lines,
+  ].join("\n");
+  navigator.clipboard.writeText(text)
+    .then(()  => showToast("クリップボードにコピーしました！"))
+    .catch(()  => showToast(text));
+});
+
+// ============================================================
+// AUTOCOMPLETE
+// ============================================================
+const searchInput  = document.getElementById("searchInput");
+const autocomplete = document.getElementById("autocomplete");
+let filtered = [];
+let acIdx    = -1;
+
+searchInput.addEventListener("input", () => {
+  const q = searchInput.value.trim().toLowerCase();
+  if (!q) { autocomplete.classList.remove("show"); return; }
+  startTimer();   // 最初の1文字入力でタイマー開始（2回目以降は無視）
+  const played = new Set(guesses.map(g => g.name));
+  filtered = getPool().filter(p => p.name.toLowerCase().includes(q) && !played.has(p.name)).slice(0,8);
+  if (!filtered.length) { autocomplete.classList.remove("show"); return; }
+  autocomplete.innerHTML = filtered.map((p,i) => {
+    const c = TEAM_COLORS[p.team] || "#555";
+    return `<div class="ac-item" data-i="${i}">
+      <div class="ac-badge" style="background:${c}">${p.team}</div>
+      <span>${p.name}</span>
+      <span class="ac-pos">${p.pos}</span>
+    </div>`;
+  }).join("");
+  autocomplete.classList.add("show");
+  acIdx = -1;
+});
+
+searchInput.addEventListener("keydown", e => {
+  const items = autocomplete.querySelectorAll(".ac-item");
+  if (e.key === "ArrowDown") { acIdx = Math.min(acIdx+1, items.length-1); hilite(items); }
+  else if (e.key === "ArrowUp")  { acIdx = Math.max(acIdx-1,0); hilite(items); }
+  else if (e.key === "Enter")  {
+    e.preventDefault();
+    if (acIdx>=0 && filtered[acIdx]) submitGuess(filtered[acIdx]);
+    else if (filtered.length===1)    submitGuess(filtered[0]);
+  } else if (e.key === "Escape") autocomplete.classList.remove("show");
+});
+function hilite(items) {
+  items.forEach((el,i) => el.classList.toggle("sel", i===acIdx));
+  if (acIdx>=0) items[acIdx]?.scrollIntoView({block:"nearest"});
+}
+autocomplete.addEventListener("click", e => {
+  const item = e.target.closest(".ac-item");
+  if (!item) return;
+  submitGuess(filtered[+item.dataset.i]);
+});
+autocomplete.addEventListener("touchstart", e => {
+  const item = e.target.closest(".ac-item");
+  if (!item) return;
+  e.preventDefault();
+  submitGuess(filtered[+item.dataset.i]);
+}, { passive: false });
+document.addEventListener("touchstart", e => {
+  if (!e.target.closest(".search-wrap")) autocomplete.classList.remove("show");
+});
+document.addEventListener("click", e => {
+  if (!e.target.closest(".search-wrap")) autocomplete.classList.remove("show");
+});
+
+// ============================================================
+// TABS
+// ============================================================
+document.querySelectorAll(".tab-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    const tab = btn.dataset.tab;
+    document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+    document.querySelectorAll(".tab-content").forEach(c => c.classList.remove("active"));
+    btn.classList.add("active");
+    document.getElementById(`tab-${tab}`).classList.add("active");
+    if (tab === "rank") renderRankings(
+      document.querySelector(".filter-btn.active")?.dataset.season ?? "all"
+    );
+  });
+});
+
+// ============================================================
+// HOW TO PLAY TOGGLE
+// ============================================================
+document.getElementById("howtoToggle").addEventListener("click", () => {
+  const t = document.getElementById("howtoToggle");
+  const b = document.getElementById("howtoBody");
+  t.classList.toggle("open");
+  b.classList.toggle("open");
+});
+
+// ============================================================
+// MODAL CLOSE ON BACKDROP
+// ============================================================
+document.getElementById("modalOverlay").addEventListener("click", e => {
+  if (e.target === document.getElementById("modalOverlay"))
+    document.getElementById("modalOverlay").classList.remove("show");
+});
+
+// ============================================================
+// TOAST
+// ============================================================
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove("show"), 2200);
+}
+
+// ============================================================
+// INIT
+// ============================================================
+function init() {
+  currentSeason = document.getElementById("seasonSelect").value;
+  updateSeasonBadge();
+  renderHeaderStats();
+  startNewGame();
+}
+init();
+</script>
+</body>
+</html>
