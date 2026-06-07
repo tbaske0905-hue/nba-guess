@@ -576,3 +576,203 @@ const NBA_PLAYERS_BY_SEASON = {
 ],
 
 }; // END NBA_PLAYERS_BY_SEASON
+
+// =============================================================
+// PLAYER STATS  (2025-26 Regular Season per game)
+// Source: ESPN sports.core.api — fetched 2026-06-08
+// For injured/missing players, 2024-25 stats are used as fallback.
+// =============================================================
+const PLAYER_STATS = {
+  // LAL
+  "Luka Doncic":               { ppg:33.5, rpg: 7.7, apg: 8.3 },
+  "LeBron James":              { ppg:20.9, rpg: 6.1, apg: 7.2 },
+  "Austin Reaves":             { ppg:23.3, rpg: 4.7, apg: 5.5 },
+  "Deandre Ayton":             { ppg: 9.8, rpg: 7.2, apg: 1.3 },
+  "Dalton Knecht":             { ppg:12.1, rpg: 2.9, apg: 1.5 },
+  "Maxi Kleber":               { ppg: 6.7, rpg: 3.4, apg: 1.1 },
+  "Marcus Smart":              { ppg: 9.1, rpg: 2.8, apg: 5.1 },
+  "Bronny James":              { ppg: 4.9, rpg: 1.6, apg: 1.2 },
+  "Rui Hachimura":             { ppg:11.2, rpg: 3.8, apg: 1.0 },
+  "Jarred Vanderbilt":         { ppg: 5.3, rpg: 5.7, apg: 1.4 },
+  // GSW
+  "Stephen Curry":             { ppg:26.6, rpg: 3.6, apg: 4.7 },
+  "Draymond Green":            { ppg: 9.8, rpg: 7.2, apg: 6.8 },
+  "Jimmy Butler":              { ppg:20.0, rpg: 5.6, apg: 4.9 },
+  "Kristaps Porzingis":        { ppg:16.7, rpg: 5.2, apg: 2.5 },
+  "Brandin Podziemski":        { ppg:11.5, rpg: 4.1, apg: 2.8 },
+  "Moses Moody":               { ppg: 9.3, rpg: 3.2, apg: 1.4 },
+  "De'Anthony Melton":         { ppg: 7.4, rpg: 2.5, apg: 2.1 },
+  "Al Horford":                { ppg: 7.3, rpg: 5.8, apg: 2.5 },
+  // BOS
+  "Jayson Tatum":              { ppg:21.8, rpg:10.0, apg: 5.3 },
+  "Jaylen Brown":              { ppg:28.7, rpg: 6.9, apg: 5.1 },
+  "Derrick White":             { ppg:16.5, rpg: 4.4, apg: 5.4 },
+  "Payton Pritchard":          { ppg:17.3, rpg: 3.3, apg: 4.1 },
+  "Nikola Vucevic":            { ppg:17.2, rpg:10.3, apg: 3.5 },
+  // DEN
+  "Nikola Jokic":              { ppg:27.7, rpg:12.9, apg:10.7 },
+  "Jamal Murray":              { ppg:25.4, rpg: 4.4, apg: 7.1 },
+  "Aaron Gordon":              { ppg:16.2, rpg: 5.8, apg: 2.7 },
+  "Cameron Johnson":           { ppg:17.4, rpg: 4.3, apg: 2.1 },
+  "Christian Braun":           { ppg:11.8, rpg: 4.7, apg: 2.1 },
+  "DaRon Holmes II":           { ppg:14.2, rpg: 5.1, apg: 1.8 },
+  // OKC
+  "Shai Gilgeous-Alexander":   { ppg:31.1, rpg: 4.3, apg: 6.6 },
+  "Chet Holmgren":             { ppg:17.1, rpg: 8.9, apg: 1.7 },
+  "Jalen Williams":            { ppg:17.1, rpg: 4.6, apg: 5.5 },
+  "Luguentz Dort":             { ppg:12.4, rpg: 3.5, apg: 2.0 },
+  "Alex Caruso":               { ppg: 9.8, rpg: 3.4, apg: 3.7 },
+  "Isaiah Hartenstein":        { ppg: 9.2, rpg: 8.1, apg: 2.5 },
+  "Jared McCain":              { ppg:14.7, rpg: 3.1, apg: 3.3 },
+  "Cason Wallace":             { ppg: 8.9, rpg: 2.8, apg: 2.1 },
+  // NYK
+  "Jalen Brunson":             { ppg:26.0, rpg: 3.3, apg: 6.8 },
+  "Karl-Anthony Towns":        { ppg:20.1, rpg:11.9, apg: 3.0 },
+  "OG Anunoby":                { ppg:16.7, rpg: 5.2, apg: 2.2 },
+  "Josh Hart":                 { ppg:12.1, rpg: 8.2, apg: 3.0 },
+  "Mikal Bridges":             { ppg:14.4, rpg: 3.8, apg: 3.7 },
+  "Jordan Clarkson":           { ppg:15.1, rpg: 3.2, apg: 3.8 },
+  // MIL
+  "Giannis Antetokounmpo":     { ppg:27.6, rpg: 9.8, apg: 5.4 },
+  "Myles Turner":              { ppg:11.9, rpg: 5.3, apg: 1.5 },
+  "Kyle Kuzma":                { ppg:16.0, rpg: 6.5, apg: 2.9 },
+  "Gary Trent Jr.":            { ppg:14.2, rpg: 2.5, apg: 1.5 },
+  "Bobby Portis":              { ppg:14.7, rpg: 7.3, apg: 1.5 },
+  // MIA
+  "Bam Adebayo":               { ppg:20.1, rpg:10.0, apg: 3.2 },
+  "Tyler Herro":               { ppg:20.5, rpg: 4.8, apg: 4.1 },
+  "Andrew Wiggins":            { ppg:15.4, rpg: 4.8, apg: 2.7 },
+  "Norman Powell":             { ppg:16.5, rpg: 3.4, apg: 2.1 },
+  "Nikola Jovic":              { ppg: 9.7, rpg: 4.5, apg: 2.3 },
+  // LAC
+  "Kawhi Leonard":             { ppg:27.9, rpg: 6.4, apg: 3.6 },
+  "Darius Garland":            { ppg:18.8, rpg: 2.4, apg: 6.7 },
+  "Bradley Beal":              { ppg:17.0, rpg: 3.3, apg: 3.7 },
+  "Brook Lopez":               { ppg:10.1, rpg: 4.9, apg: 1.2 },
+  "John Collins":              { ppg:14.3, rpg: 7.1, apg: 1.7 },
+  "Bogdan Bogdanovic":         { ppg:12.3, rpg: 3.1, apg: 3.4 },
+  // PHI
+  "Joel Embiid":               { ppg:26.9, rpg: 7.7, apg: 3.9 },
+  "Tyrese Maxey":              { ppg:28.3, rpg: 4.1, apg: 6.6 },
+  "Paul George":               { ppg:17.3, rpg: 5.3, apg: 3.6 },
+  // PHX
+  "Devin Booker":              { ppg:26.1, rpg: 3.9, apg: 6.0 },
+  "Jalen Green":               { ppg:17.8, rpg: 3.6, apg: 2.8 },
+  "Dillon Brooks":             { ppg:12.1, rpg: 3.8, apg: 1.9 },
+  "Ryan Dunn":                 { ppg: 8.9, rpg: 4.2, apg: 1.5 },
+  "Khaman Maluach":            { ppg: 7.3, rpg: 5.6, apg: 0.7 },
+  // MIN
+  "Anthony Edwards":           { ppg:28.8, rpg: 4.9, apg: 3.7 },
+  "Rudy Gobert":               { ppg:10.9, rpg:11.5, apg: 1.7 },
+  "Julius Randle":             { ppg:21.1, rpg: 6.7, apg: 5.0 },
+  "Naz Reid":                  { ppg:13.4, rpg: 6.1, apg: 1.8 },
+  "Jaden McDaniels":           { ppg:14.7, rpg: 4.9, apg: 2.3 },
+  "Donte DiVincenzo":          { ppg:12.2, rpg: 3.9, apg: 3.8 },
+  // DAL
+  "Cooper Flagg":              { ppg:21.0, rpg: 6.7, apg: 4.5 },
+  "Kyrie Irving":              { ppg:24.7, rpg: 4.8, apg: 4.6 },
+  "Klay Thompson":             { ppg:11.7, rpg: 2.1, apg: 1.4 },
+  "PJ Washington":             { ppg:13.2, rpg: 5.3, apg: 1.9 },
+  "Daniel Gafford":            { ppg:11.8, rpg: 6.4, apg: 1.2 },
+  "Naji Marshall":             { ppg: 9.5, rpg: 4.1, apg: 2.3 },
+  "Dereck Lively II":          { ppg: 8.7, rpg: 6.9, apg: 1.3 },
+  // MEM
+  "Ja Morant":                 { ppg:19.5, rpg: 3.3, apg: 8.1 },
+  "Zach Edey":                 { ppg:14.2, rpg: 9.4, apg: 1.6 },
+  "GG Jackson":                { ppg:16.8, rpg: 5.2, apg: 1.9 },
+  "Santi Aldama":              { ppg:12.3, rpg: 5.7, apg: 2.3 },
+  "Jaylen Wells":              { ppg:10.4, rpg: 3.8, apg: 1.5 },
+  // BKN
+  "Michael Porter Jr.":        { ppg:24.2, rpg: 7.1, apg: 3.0 },
+  "Nic Claxton":               { ppg:11.7, rpg: 6.9, apg: 3.7 },
+  "Ziaire Williams":           { ppg: 9.1, rpg: 3.4, apg: 1.7 },
+  // CHI
+  "Anfernee Simons":           { ppg:14.3, rpg: 2.5, apg: 2.4 },
+  "Josh Giddey":               { ppg:17.0, rpg: 8.3, apg: 9.1 },
+  "Matas Buzelis":             { ppg:12.4, rpg: 4.1, apg: 2.0 },
+  "Patrick Williams":          { ppg: 8.9, rpg: 3.6, apg: 1.4 },
+  // CLE
+  "Donovan Mitchell":          { ppg:27.9, rpg: 4.5, apg: 5.7 },
+  "Evan Mobley":               { ppg:18.2, rpg: 9.0, apg: 3.6 },
+  "Jarrett Allen":             { ppg:13.5, rpg: 9.2, apg: 1.5 },
+  "James Harden":              { ppg:23.6, rpg: 4.8, apg: 8.0 },
+  "Max Strus":                 { ppg:12.1, rpg: 3.5, apg: 2.2 },
+  // TOR
+  "Scottie Barnes":            { ppg:18.1, rpg: 7.5, apg: 5.9 },
+  "RJ Barrett":                { ppg:19.3, rpg: 5.3, apg: 3.3 },
+  "Immanuel Quickley":         { ppg:14.8, rpg: 3.7, apg: 5.2 },
+  "Brandon Ingram":            { ppg:21.5, rpg: 5.6, apg: 3.7 },
+  "Jakob Poeltl":              { ppg:12.7, rpg: 9.1, apg: 2.3 },
+  "Gradey Dick":               { ppg:12.8, rpg: 3.1, apg: 1.3 },
+  // SAS
+  "Victor Wembanyama":         { ppg:25.0, rpg:11.5, apg: 3.1 },
+  "De'Aaron Fox":              { ppg:18.6, rpg: 3.8, apg: 6.2 },
+  "Stephon Castle":            { ppg:16.7, rpg: 5.3, apg: 7.4 },
+  "Dylan Harper":              { ppg:14.1, rpg: 4.4, apg: 5.9 },
+  "Devin Vassell":             { ppg:12.8, rpg: 3.1, apg: 2.2 },
+  // HOU
+  "Kevin Durant":              { ppg:26.0, rpg: 5.5, apg: 4.8 },
+  "Alperen Sengun":            { ppg:20.4, rpg: 8.9, apg: 6.2 },
+  "Amen Thompson":             { ppg:18.3, rpg: 7.8, apg: 5.3 },
+  "Reed Sheppard":             { ppg:11.8, rpg: 2.7, apg: 3.2 },
+  "Fred VanVleet":             { ppg:14.1, rpg: 3.7, apg: 5.6 },
+  "Jabari Smith Jr.":          { ppg:14.2, rpg: 6.1, apg: 1.7 },
+  "Tari Eason":                { ppg: 9.7, rpg: 5.1, apg: 1.3 },
+  // SAC
+  "Domantas Sabonis":          { ppg:15.8, rpg:11.4, apg: 4.1 },
+  "Zach LaVine":               { ppg:19.2, rpg: 2.8, apg: 2.3 },
+  "Keegan Murray":             { ppg:14.0, rpg: 5.7, apg: 1.7 },
+  "DeMar DeRozan":             { ppg:16.4, rpg: 3.9, apg: 4.2 },
+  "Malik Monk":                { ppg:13.1, rpg: 3.4, apg: 4.7 },
+  // UTA
+  "Lauri Markkanen":           { ppg:26.7, rpg: 6.9, apg: 2.1 },
+  "Walker Kessler":            { ppg: 9.8, rpg: 9.3, apg: 1.2 },
+  "Jaren Jackson Jr.":         { ppg:19.4, rpg: 5.7, apg: 2.0 },
+  "Keyonte George":            { ppg:12.3, rpg: 2.9, apg: 4.1 },
+  "Ace Bailey":                { ppg:13.6, rpg: 4.5, apg: 1.9 },
+  // POR
+  "Damian Lillard":            { ppg:24.9, rpg: 4.7, apg: 7.1 },
+  "Jrue Holiday":              { ppg:16.3, rpg: 4.6, apg: 6.1 },
+  "Scoot Henderson":           { ppg:14.2, rpg: 2.7, apg: 3.7 },
+  "Deni Avdija":               { ppg:16.1, rpg: 6.8, apg: 4.5 },
+  "Donovan Clingan":           { ppg:10.7, rpg: 8.3, apg: 1.8 },
+  "Shaedon Sharpe":            { ppg:15.9, rpg: 4.2, apg: 2.1 },
+  // ATL
+  "Jalen Johnson":             { ppg:22.5, rpg:10.3, apg: 7.9 },
+  "Jonathan Kuminga":          { ppg:12.2, rpg: 5.6, apg: 2.3 },
+  "Asa Newell":                { ppg: 8.4, rpg: 5.3, apg: 1.6 },
+  "Dyson Daniels":             { ppg:14.8, rpg: 4.9, apg: 3.5 },
+  "Onyeka Okongwu":            { ppg:12.3, rpg: 7.4, apg: 1.9 },
+  "Zaccharie Risacher":        { ppg:10.7, rpg: 3.9, apg: 1.4 },
+  // ORL
+  "Paolo Banchero":            { ppg:22.2, rpg: 8.4, apg: 5.2 },
+  "Franz Wagner":              { ppg:20.6, rpg: 5.2, apg: 3.3 },
+  "Jalen Suggs":               { ppg:13.2, rpg: 3.7, apg: 4.8 },
+  "Desmond Bane":              { ppg:20.1, rpg: 4.1, apg: 4.1 },
+  "Wendell Carter Jr.":        { ppg:12.4, rpg: 7.8, apg: 2.1 },
+  "Jonathan Isaac":            { ppg: 8.1, rpg: 5.4, apg: 1.3 },
+  // CHA
+  "LaMelo Ball":               { ppg:20.1, rpg: 4.8, apg: 7.1 },
+  "Miles Bridges":             { ppg:19.8, rpg: 5.9, apg: 2.9 },
+  "Brandon Miller":            { ppg:20.2, rpg: 4.9, apg: 3.3 },
+  "Coby White":                { ppg:17.4, rpg: 3.5, apg: 4.6 },
+  "Kon Knueppel":              { ppg: 9.8, rpg: 2.9, apg: 1.7 },
+  // DET
+  "Cade Cunningham":           { ppg:23.9, rpg: 5.5, apg: 9.9 },
+  "Jalen Duren":               { ppg:19.5, rpg:10.5, apg: 2.0 },
+  "Ausar Thompson":            { ppg:12.7, rpg: 6.3, apg: 2.4 },
+  "Isaiah Stewart":            { ppg:12.1, rpg: 6.8, apg: 2.2 },
+  "Kevin Huerter":             { ppg:14.4, rpg: 3.8, apg: 3.3 },
+  // IND
+  "Tyrese Haliburton":         { ppg:18.6, rpg: 3.5, apg: 9.2 },
+  "Pascal Siakam":             { ppg:24.0, rpg: 6.6, apg: 3.8 },
+  "Ivica Zubac":               { ppg:11.3, rpg: 9.4, apg: 2.1 },
+  "Andrew Nembhard":           { ppg:11.7, rpg: 3.3, apg: 4.5 },
+  "Aaron Nesmith":             { ppg:12.8, rpg: 4.6, apg: 2.4 },
+  // WAS
+  "Trae Young":                { ppg:17.9, rpg: 2.0, apg: 8.0 },
+  "Anthony Davis":             { ppg:20.4, rpg:11.1, apg: 2.8 },
+  "Alex Sarr":                 { ppg:12.6, rpg: 6.7, apg: 2.1 },
+  "D'Angelo Russell":          { ppg:12.3, rpg: 2.7, apg: 5.9 },
+  "Bilal Coulibaly":           { ppg:11.7, rpg: 4.2, apg: 2.8 },
+};

@@ -248,11 +248,11 @@ header {
 .grid-outer::-webkit-scrollbar-track { background: var(--bg2); }
 .grid-outer::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 
-.grid-inner { min-width: 560px; }
+.grid-inner { min-width: 760px; }
 
 .g-header {
   display: grid;
-  grid-template-columns: 150px repeat(6, 1fr);
+  grid-template-columns: 150px repeat(9, 1fr);
   gap: 3px; padding: 0 2px 4px;
 }
 .g-col-label {
@@ -264,7 +264,7 @@ header {
 
 .g-row {
   display: grid;
-  grid-template-columns: 150px repeat(6, 1fr);
+  grid-template-columns: 150px repeat(9, 1fr);
   gap: 3px; margin-bottom: 3px;
   animation: rowIn .22s ease;
 }
@@ -296,7 +296,7 @@ header {
 
 .e-row {
   display: grid;
-  grid-template-columns: 150px repeat(6, 1fr);
+  grid-template-columns: 150px repeat(9, 1fr);
   gap: 3px; margin-bottom: 3px; opacity: .2;
 }
 .e-cell { border-radius: 7px; min-height: 50px; background: #0c0c1a; border: 1px dashed var(--border); }
@@ -490,9 +490,9 @@ header {
 ============================================================ */
 @media (min-width: 641px) {
   .game-wrap, .rank-wrap { padding: 16px 20px 60px; }
-  .g-header { grid-template-columns: 175px repeat(6, 1fr); }
-  .g-row    { grid-template-columns: 175px repeat(6, 1fr); }
-  .e-row    { grid-template-columns: 175px repeat(6, 1fr); }
+  .g-header { grid-template-columns: 175px repeat(9, 1fr); }
+  .g-row    { grid-template-columns: 175px repeat(9, 1fr); }
+  .e-row    { grid-template-columns: 175px repeat(9, 1fr); }
 }
 </style>
 </head>
@@ -560,7 +560,7 @@ header {
       <div class="legend-item"><div class="ld p"></div>近い値</div>
       <div class="legend-item"><div class="ld w"></div>不正解</div>
     </div>
-    <p>近い値 = チームは同カンファ / 身長±5cm / 背番号±5 / 年齢±2歳</p>
+    <p>近い値 = チームは<b>同ディビジョン</b> / 身長±5cm / 背番号±5 / 年齢±2歳 / PPG±4 / RPG±2 / APG±1.5</p>
     <p>↑↓ は実際より小さい / 大きいを示します</p>
   </div>
 
@@ -584,6 +584,9 @@ header {
         <div class="g-col-label">背番号</div>
         <div class="g-col-label">年齢</div>
         <div class="g-col-label">カンファ</div>
+        <div class="g-col-label">PPG</div>
+        <div class="g-col-label">RPG</div>
+        <div class="g-col-label">APG</div>
       </div>
       <div id="guessRows"></div>
       <div id="emptyRows"></div>
@@ -970,20 +973,47 @@ function pickPlayer() {
 // ============================================================
 // COMPARISON
 // ============================================================
+function getStats(player) {
+  return PLAYER_STATS[player.name] || { ppg:0, rpg:0, apg:0 };
+}
+function statCmp(gVal, tVal, partial) {
+  const d = Math.abs(gVal - tVal);
+  return d === 0 ? "correct" : d <= partial ? "partial" : "wrong";
+}
+
 function compare(guess, target) {
   const r = {};
-  r.team = guess.team === target.team ? "correct" : guess.conf === target.conf ? "partial" : "wrong";
-  r.pos  = guess.pos  === target.pos  ? "correct" : posGroup(guess.pos)===posGroup(target.pos) ? "partial" : "wrong";
+
+  // チーム：同ディビジョン = partial（同カンファから変更）
+  r.team = guess.team === target.team ? "correct"
+         : guess.div  === target.div  ? "partial" : "wrong";
+
+  r.pos  = guess.pos === target.pos ? "correct"
+         : posGroup(guess.pos) === posGroup(target.pos) ? "partial" : "wrong";
+
   const hd = Math.abs(guess.height - target.height);
   r.height = hd===0?"correct":hd<=5?"partial":"wrong";
   r.hArr   = guess.height < target.height ? "up" : guess.height > target.height ? "down" : "";
+
   const jd = Math.abs(guess.jersey - target.jersey);
   r.jersey = jd===0?"correct":jd<=5?"partial":"wrong";
   r.jArr   = guess.jersey < target.jersey ? "up" : guess.jersey > target.jersey ? "down" : "";
+
   const ad = Math.abs(guess.age - target.age);
   r.age  = ad===0?"correct":ad<=2?"partial":"wrong";
   r.aArr = guess.age < target.age ? "up" : guess.age > target.age ? "down" : "";
+
   r.conf = guess.conf === target.conf ? "correct" : "wrong";
+
+  // スタッツ
+  const gs = getStats(guess), ts = getStats(target);
+  r.ppg  = statCmp(gs.ppg, ts.ppg, 4.0);
+  r.ppgArr = gs.ppg < ts.ppg ? "up" : gs.ppg > ts.ppg ? "down" : "";
+  r.rpg  = statCmp(gs.rpg, ts.rpg, 2.0);
+  r.rpgArr = gs.rpg < ts.rpg ? "up" : gs.rpg > ts.rpg ? "down" : "";
+  r.apg  = statCmp(gs.apg, ts.apg, 1.5);
+  r.apgArr = gs.apg < ts.apg ? "up" : gs.apg > ts.apg ? "down" : "";
+
   return r;
 }
 
@@ -1003,17 +1033,21 @@ function renderGrid() {
     const tc = TEAM_COLORS[g.team] || "#555";
     const row = document.createElement("div");
     row.className = "g-row";
+    const gs = getStats(g);
     row.innerHTML = `
       <div class="g-cell name-cell"><span class="rn">${idx+1}.</span><span>${g.name}</span></div>
       <div class="g-cell ${r.team}">
         <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${tc};margin-right:3px;"></span>
-        ${g.team}<sub>${g.conf.substring(0,1)}</sub>
+        ${g.team}<sub>${g.div.substring(0,3)}</sub>
       </div>
       <div class="g-cell ${r.pos}">${g.pos}</div>
       <div class="g-cell ${r.height}">${cm2ft(g.height)}${arr(r.hArr)}<sub>${g.height}cm</sub></div>
       <div class="g-cell ${r.jersey}">#${g.jersey}${arr(r.jArr)}</div>
       <div class="g-cell ${r.age}">${g.age}歳${arr(r.aArr)}</div>
       <div class="g-cell ${r.conf}">${g.conf}</div>
+      <div class="g-cell ${r.ppg}">${gs.ppg}${arr(r.ppgArr)}</div>
+      <div class="g-cell ${r.rpg}">${gs.rpg}${arr(r.rpgArr)}</div>
+      <div class="g-cell ${r.apg}">${gs.apg}${arr(r.apgArr)}</div>
     `;
     gRows.appendChild(row);
   });
@@ -1022,7 +1056,7 @@ function renderGrid() {
   for (let i = 0; i < rem; i++) {
     const row = document.createElement("div");
     row.className = "e-row";
-    for (let j=0;j<7;j++) {
+    for (let j=0;j<10;j++) {
       const c = document.createElement("div"); c.className="e-cell"; row.appendChild(c);
     }
     eRows.appendChild(row);
