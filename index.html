@@ -456,6 +456,48 @@ header {
 /* ============================================================
    TOAST
 ============================================================ */
+
+/* ── Correct Flash ── */
+.correct-flash {
+  position: fixed; inset: 0; z-index: 400;
+  display: flex; align-items: center; justify-content: center;
+  pointer-events: none;
+}
+.correct-text {
+  font-size: clamp(2.5rem, 10vw, 5rem);
+  font-weight: 900; letter-spacing: 4px; color: #fff;
+  text-shadow: 0 0 30px var(--green), 0 0 60px var(--green);
+  animation: correctPop .95s ease forwards;
+}
+@keyframes correctPop {
+  0%   { opacity: 0; transform: scale(.3) rotate(-8deg); }
+  30%  { opacity: 1; transform: scale(1.2) rotate(3deg); }
+  55%  { transform: scale(.95) rotate(-1deg); }
+  70%  { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: scale(1.05); }
+}
+
+/* ── Confetti ── */
+.confetti-piece {
+  position: fixed; width: 10px; height: 10px;
+  border-radius: 2px; pointer-events: none; z-index: 401;
+  animation: confettiFall linear forwards;
+}
+@keyframes confettiFall {
+  0%   { opacity: 1; transform: translateY(-20px) rotate(0deg); }
+  100% { opacity: 0; transform: translateY(100vh) rotate(720deg); }
+}
+
+/* ── Win row pulse ── */
+.g-row.win-row .g-cell {
+  animation: cellPulse .5s ease .05s both;
+}
+@keyframes cellPulse {
+  0%   { transform: scale(1); }
+  45%  { transform: scale(1.07); box-shadow: 0 0 14px var(--green); }
+  100% { transform: scale(1); }
+}
+
 .toast {
   position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
   background: var(--gold); color: #000; padding: 9px 20px;
@@ -903,6 +945,48 @@ document.getElementById("seasonSelect").addEventListener("change", e => {
 });
 
 // ============================================================
+// WIN EFFECT
+// ============================================================
+const CONFETTI_COLORS = [
+  "#c8a84b","#4ade80","#60a5fa","#f472b6","#fb923c","#a78bfa","#fff"
+];
+
+function launchWinEffect() {
+  // 正解行に pulse クラス
+  const rows = document.querySelectorAll(".g-row");
+  if (rows.length) rows[rows.length - 1].classList.add("win-row");
+
+  // "CORRECT!" テキスト
+  const flash = document.createElement("div");
+  flash.className = "correct-flash";
+  flash.innerHTML = `<span class="correct-text">🎉 CORRECT!</span>`;
+  document.body.appendChild(flash);
+  setTimeout(() => flash.remove(), 1100);
+
+  // コンフェッティ
+  const count = 80;
+  for (let i = 0; i < count; i++) {
+    const el = document.createElement("div");
+    el.className = "confetti-piece";
+    const x = Math.random() * 100;
+    const dur = 1.2 + Math.random() * 1.6;
+    const delay = Math.random() * 0.5;
+    const color = CONFETTI_COLORS[Math.floor(Math.random() * CONFETTI_COLORS.length)];
+    const size = 6 + Math.random() * 10;
+    el.style.cssText = `
+      left:${x}vw; top:-10px;
+      width:${size}px; height:${size}px;
+      background:${color};
+      border-radius:${Math.random() > .5 ? "50%" : "2px"};
+      animation-duration:${dur}s;
+      animation-delay:${delay}s;
+    `;
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), (dur + delay + 0.2) * 1000);
+  }
+}
+
+// ============================================================
 // TIMER
 // ============================================================
 function resetTimer() {
@@ -1116,6 +1200,7 @@ function submitGuess(player) {
     const score = calcScore(guesses.length, won, stats.streak, elapsedSecs);
     addRankingEntry(won, guesses.length, score, stats.streak);
 
+    if (won) launchWinEffect();
     setTimeout(() => showModal(won, stats, score), 700);
   }
 }
