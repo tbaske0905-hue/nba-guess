@@ -498,6 +498,49 @@ header {
   100% { transform: scale(1); }
 }
 
+/* ── Lose Reveal ── */
+.lose-overlay {
+  position: fixed; inset: 0; z-index: 400;
+  background: rgba(0,0,0,0); pointer-events: none;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 10px;
+  animation: loseFade 1.6s ease forwards;
+}
+@keyframes loseFade {
+  0%   { background: rgba(0,0,0,0); }
+  20%  { background: rgba(180,0,0,.35); }
+  60%  { background: rgba(180,0,0,.18); }
+  100% { background: rgba(0,0,0,0); }
+}
+.lose-label {
+  font-size: clamp(1.2rem, 6vw, 2.2rem); font-weight: 900;
+  color: #f87171; letter-spacing: 3px;
+  text-shadow: 0 0 20px rgba(248,113,113,.6);
+  animation: loseShake .5s ease both;
+}
+@keyframes loseShake {
+  0%,100% { transform: translateX(0); }
+  20%     { transform: translateX(-8px) rotate(-2deg); }
+  40%     { transform: translateX(8px) rotate(2deg); }
+  60%     { transform: translateX(-5px); }
+  80%     { transform: translateX(5px); }
+}
+.lose-answer {
+  font-size: clamp(1.8rem, 8vw, 3.5rem); font-weight: 900;
+  color: #fff; text-align: center;
+  animation: answerReveal .7s ease .3s both;
+  text-shadow: 0 0 30px var(--gold), 0 0 60px rgba(200,168,75,.4);
+}
+@keyframes answerReveal {
+  0%   { opacity: 0; transform: scale(.5) translateY(20px); filter: blur(8px); }
+  60%  { opacity: 1; transform: scale(1.1) translateY(-4px); filter: blur(0); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+.lose-name {
+  font-size: clamp(1rem, 4vw, 1.6rem); font-weight: 700; color: var(--gold);
+  animation: answerReveal .6s ease .55s both;
+}
+
 .toast {
   position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
   background: var(--gold); color: #000; padding: 9px 20px;
@@ -986,6 +1029,18 @@ function launchWinEffect() {
   }
 }
 
+function launchLoseEffect(player) {
+  const el = document.createElement("div");
+  el.className = "lose-overlay";
+  el.innerHTML = `
+    <div class="lose-label">😞 GAME OVER</div>
+    <div class="lose-answer">${player.emoji || "🏀"}</div>
+    <div class="lose-name">${player.name}</div>
+  `;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 1800);
+}
+
 // ============================================================
 // TIMER
 // ============================================================
@@ -1200,8 +1255,9 @@ function submitGuess(player) {
     const score = calcScore(guesses.length, won, stats.streak, elapsedSecs);
     addRankingEntry(won, guesses.length, score, stats.streak);
 
-    if (won) launchWinEffect();
-    setTimeout(() => showModal(won, stats, score), 700);
+    if (won)  launchWinEffect();
+    else      launchLoseEffect(currentPlayer);
+    setTimeout(() => showModal(won, stats, score), won ? 700 : 1900);
   }
 }
 
